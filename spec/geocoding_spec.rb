@@ -49,6 +49,23 @@ describe MapQuest::Services::Geocoding do
       it { geocoding.options[:thumbMaps].should == false }
     end
 
+    context 'location is not provided, but a country and postcode are' do
+      subject(:geocoding) { mapquest.geocoding.address postalCode: "GU34", :country => "GB" }
+
+      it 'should receive a location and country' do
+        fixture = fixture 'geocoding/location_country'
+        query = {
+            :key => 'xxx',
+            :postalCode => 'GU34',
+            :country => "GB"
+        }
+        stub_request(:get, 'www.mapquestapi.com/geocoding/v1/address').with(:query => query).to_return(:body => fixture)
+      end
+
+      its(:providedLocation) { should == {postalCode: "GU34", country: "GB"} }
+
+    end
+
     context 'location and :maxResults are provided' do
       subject(:geocoding) { mapquest.geocoding.address 'London, UK', :maxResults => 2 }
 

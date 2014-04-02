@@ -4,7 +4,7 @@ class MapQuest
     class Geocoding < Core
 
       API_LOCATION = :geocoding
-      VALID_OPTIONS = [:location,:maxResults,:thumbMaps]
+      VALID_OPTIONS = [:location,:maxResults,:thumbMaps,:country,:postalCode]
 
       class TooManyLocations < StandardError; end
 
@@ -12,14 +12,18 @@ class MapQuest
       #
       #   Example: .address :location => "London, UK"
       #
-      # ==Required parameters
-      # * location [String] The location for which you wish to get data
-      # ==Optional parameters
+      # ==Optional parameter
+      # * location [String] The location for which you wish to get data. If you omit this, you must include one or more of the following options.
+      # ==Options parameters
+      # * :location [String] A single-line address to lookup, as detailed here: http://www.mapquestapi.com/common/locations.html#singlelinelocations
+      # * :postalCode [String] A postcode (or partial postcode) to lookup.
+      # * :country [String] The name of a country to restrict the results to. E.g. "GB", "France"
       # * :maxResults [Integer] The number of results to limit the response to. Defaults to -1 (-1 indicates no limit)
       # * :thumbMaps [Boolean] Return a URL to a static map thumbnail image for a location. Defaults to true
-      def address(location, options = {})
-        raise ArgumentError, 'Method must receive a location (string)' unless location
-        options[:location] = location
+      def address(*args)
+        options = args.last.is_a?(Hash) ? args.last : {}
+        options[:location] = args.first if args.first.is_a? String
+        raise ArgumentError, 'Method must receive a location (string) or options (hash)' unless options.keys.count > 0
         call_api self, 1, 'address', options
       end
 
